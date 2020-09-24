@@ -1,0 +1,192 @@
+#!/bin/sh
+
+#1#
+
+cd
+rm -r test
+mkdir test
+
+#2#
+
+cd test
+>list
+#touch list#
+#echo > list#
+#cp dev/null list#
+
+cd /etc
+ls -aAl | tee -a /root/test/list
+
+#3#
+
+echo "Count of dir:" | tee -a /root/test/list
+find -maxdepth 1 -type d -name "*" | wc -l | tee -a /root/test/list
+echo "Count of hidden files:" | tee -a /root/test/list
+find -maxdepth 1 -type f -name ".*" | wc -l | tee -a /root/test/list
+read
+
+#4#
+
+cd
+cd test
+mkdir links
+
+#5#
+
+cd links
+ln /root/test/list list_hlink
+
+#6#
+
+ln -s /root/test/list list_slink
+
+#7#
+
+echo "Count of hlinks of list_hlink:"
+find ~ -samefile list_hlink | wc -l
+#ls list_hlink -l | cut -d " " -f2
+echo "Count of hlinks of list_slink:"
+find ~ -samefile list_slink | wc -l
+#ls list_slink -l | cut -d " " -f2
+echo "Count of hlinks of list:"
+find ~ -samefile /root/test/list | wc -l
+#ls /root/test/list -l | cut -d " " -f2
+read
+
+#8#
+
+echo "Number 8"
+echo "Count of lines:" | tee -a list_hlink
+wc -l /root/test/list | tee -a list_hlink
+read
+
+#9#
+
+echo "Number 9"
+if cmp -s list_hlink list_slink; then
+echo "YES"
+fi
+read
+
+#10#
+
+mv /root/test/list /root/test/list1
+
+#11#
+#if cmp -s list_hlink list_slink; then
+#echo "YES"
+rm list_slink
+
+#12#
+
+cd
+rm list_link
+ln /root/test/list1 list_link
+
+#13#
+
+> list_conf
+cd /
+cd etc
+ls | find -type f -name "*.conf" | tee -a /root/list_conf
+
+#14#
+
+rm list_d
+
+> /root/list_d
+ls | find -type d -name "*.d" | tee -a /root/list_d
+
+
+#15#
+
+rm list_conf_d
+cd
+> list_conf_d
+cat list_conf list_d | tee -a list_conf_d
+
+#16#
+
+cd test
+mkdir .sub
+
+#17#
+
+cp /root/list_conf_d /root/test/.sub
+
+#18#
+
+cp -b /root/list_conf_d /root/test/.sub
+
+#19#
+
+echo "Number 19"
+tree -a
+read
+
+#20#
+
+cd
+rm man.txt
+>man.txt
+man --help | tee -a man.txt
+read
+
+#21#
+
+echo "Number 21"
+split -b 1KB man.txt
+du -sbh man.txt
+du -sbh x*
+read
+
+#22#
+
+rm -r man.dir
+mkdir man.dir
+
+#23#
+
+mv /root/x* man.dir
+
+#24#
+
+cd man.dir
+>man.txt
+cat x* | tee -a man.txt
+
+#25#
+
+echo "Number 25"
+if cmp -s man.txt /root/man.txt; then
+echo "YES"
+fi
+read
+
+#26#
+
+sed -i "1s/^/BEGIN_STRING\n/" /root/man.txt
+echo "END_STRING" >> /root/man.txt
+
+#27#
+
+cd
+>diff_man
+diff man.txt /root/man.dir/man.txt | tee -a diff_man
+read
+
+#28#
+
+mv diff_man /root/man.dir
+
+#29#
+
+cd man.dir
+patch man.txt < diff_man
+read
+
+#30#
+
+if cmp -s man.txt /root/man.txt; then
+echo "YES"
+fi
